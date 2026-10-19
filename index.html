@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dompet Mahasiswa Kos - Manajemen Keuangan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header Aplikasi -->
+    <header class="app-header">
+      <h1>Dompet Mahasiswa Kos</h1>
+      <p class="subtitle">Pencatatan Keuangan Harian Mahasiswa Kos</p>
+    </header>
+
+    <main class="main-content">
+      <!-- W1: Form Tambah Transaksi -->
+      <section class="card form-section">
+        <h2>Tambah Transaksi</h2>
+        <form id="form-transaksi">
+          <div class="form-group">
+            <label for="tanggal">Tanggal</label>
+            <input type="date" id="tanggal" required>
+          </div>
+
+          <div class="form-group">
+            <label for="jenis">Jenis Transaksi</label>
+            <select id="jenis" required>
+              <option value="pengeluaran">Pengeluaran</option>
+              <option value="pemasukan">Pemasukan</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="kategori">Kategori</label>
+            <select id="kategori" required>
+              <option value="" disabled selected>Pilih Kategori</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="nominal">Nominal (Rp)</label>
+            <input type="number" id="nominal" min="1" placeholder="Contoh: 15000" required>
+          </div>
+
+          <div class="form-group">
+            <label for="catatan">Catatan (Opsional)</label>
+            <input type="text" id="catatan" placeholder="Contoh: Nasi padang + es teh">
+          </div>
+
+          <button type="submit" id="btn-simpan" class="btn btn-primary">Simpan Transaksi</button>
+        </form>
+      </section>
+
+      <!-- W2 & W3: Daftar Transaksi -->
+      <section class="card list-section">
+        <div class="list-header">
+          <h2>Daftar Transaksi</h2>
+          <span id="total-transaksi-badge" class="badge badge-info">0 Transaksi</span>
+        </div>
+
+        <div id="kontainer-daftar" class="transaction-list">
+          <!-- Item transaksi akan dirender dinamis lewat JavaScript -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
