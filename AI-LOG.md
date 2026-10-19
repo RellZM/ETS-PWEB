@@ -15,7 +15,7 @@ Format entri:
 
 ---
 ## Tahap 0: Planning:
-- Link conversation = https://claude.ai/share/668d1d85-6174-4270-a529-2a7967b3180d
+Melakukan planning untuk apa yang perlu dilakukan dan bagaimana langkah langkah yang akan diambil. bagian ini juga diimprove oleh AI.
 
 ## Tahap 1: W1–W4 (Form Tambah, Daftar Transaksi, Hapus, dan LocalStorage)
 - Prompt: “oke untuk tahap pertama tolong untuk membuat week 1 = kategori beri makan, jajan, menabung, parkir, biaya bulanan kerjakan tahap 1 aja dulu”
