@@ -14,14 +14,86 @@
       <p class="subtitle">Pencatatan Keuangan Harian Mahasiswa Kos</p>
     </header>
 
+    <!-- F3: Banner Peringatan Visual Jatah Harian -->
+    <div id="banner-peringatan" class="warning-banner" role="alert">
+      <!-- Diisi dinamis oleh JavaScript -->
+    </div>
+
+    <!-- W5: Ringkasan Keuangan -->
+    <section class="summary-grid">
+      <div class="card summary-card summary-balance">
+        <span class="summary-label">Sisa Saldo</span>
+        <span id="ringkasan-saldo" class="summary-value">Rp 0</span>
+      </div>
+      <div class="card summary-card summary-income">
+        <span class="summary-label">Total Pemasukan</span>
+        <span id="ringkasan-pemasukan" class="summary-value">Rp 0</span>
+      </div>
+      <div class="card summary-card summary-expense">
+        <span class="summary-label">Total Pengeluaran</span>
+        <span id="ringkasan-pengeluaran" class="summary-value">Rp 0</span>
+      </div>
+    </section>
+
+    <!-- F1 & F2: Fitur Khas Mahasiswa Kos (Uang Bulanan & Jatah Harian) -->
+    <section class="card budget-section">
+      <div class="budget-grid">
+        <!-- F1: Sumber Uang Bulanan dari Transaksi Pemasukan -->
+        <div class="budget-col">
+          <h3>Sumber Uang Bulanan</h3>
+          <p class="budget-desc">Otomatis diambil dari transaksi pemasukan kategori <strong>Uang Bulanan</strong>.</p>
+          <div class="allowance-stats">
+            <div class="stat-item">
+              <span class="stat-label">Uang Bulanan Bulan Ini:</span>
+              <span id="nilai-uang-bulanan" class="stat-value text-primary">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Pemasukan Non-Bulanan:</span>
+              <span id="nilai-pemasukan-sampingan" class="stat-value text-muted">Rp 0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Keterangan:</span>
+              <span id="status-uang-bulanan" class="stat-value text-muted" style="font-size: 0.8rem;">Otomatis dari form transaksi</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- F2: Informasi Jatah Harian & Checker Harian -->
+        <div class="budget-col daily-allowance-col">
+          <h3>Jatah & Checker Harian (Siklus 30 Hari)</h3>
+          <p class="budget-desc">Target bertahan 30 hari sejak uang bulanan diterima.</p>
+          <div class="allowance-stats">
+            <div class="stat-item">
+              <span class="stat-label">Jatah Harian:</span>
+              <span id="nilai-jatah-harian" class="stat-value text-primary">-</span>
+            </div>
+            <div class="stat-item">
+              <span id="label-pengeluaran-harian" class="stat-label">Total Pengeluaran Hari Ini:</span>
+              <span id="nilai-pengeluaran-hari-ini" class="stat-value text-danger">Rp 0 (0 input)</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Checker Pengeluaran:</span>
+              <span id="checker-status-harian" class="stat-value text-muted">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Sisa Waktu Bertahan:</span>
+              <span id="nilai-sisa-hari" class="stat-value text-muted">30 hari</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Konten Utama: Form Transaksi & Daftar Transaksi -->
     <main class="main-content">
-      <!-- W1: Form Tambah Transaksi -->
+      <!-- W1 & W6: Form Tambah Transaksi dengan Validasi Inline -->
       <section class="card form-section">
         <h2>Tambah Transaksi</h2>
-        <form id="form-transaksi">
+        <form id="form-transaksi" novalidate>
           <div class="form-group">
             <label for="tanggal">Tanggal</label>
             <input type="date" id="tanggal" required>
+            <div id="error-tanggal" class="error-message"></div>
           </div>
 
           <div class="form-group">
@@ -30,6 +102,7 @@
               <option value="pengeluaran">Pengeluaran</option>
               <option value="pemasukan">Pemasukan</option>
             </select>
+            <div id="error-jenis" class="error-message"></div>
           </div>
 
           <div class="form-group">
@@ -37,11 +110,13 @@
             <select id="kategori" required>
               <option value="" disabled selected>Pilih Kategori</option>
             </select>
+            <div id="error-kategori" class="error-message"></div>
           </div>
 
           <div class="form-group">
             <label for="nominal">Nominal (Rp)</label>
-            <input type="number" id="nominal" min="1" placeholder="Contoh: 15000" required>
+            <input type="text" id="nominal" inputmode="numeric" placeholder="Contoh: 15.000,-" required autocomplete="off">
+            <div id="error-nominal" class="error-message"></div>
           </div>
 
           <div class="form-group">

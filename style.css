@@ -44,7 +44,7 @@ body {
 /* Header */
 .app-header {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .app-header h1 {
@@ -57,6 +57,172 @@ body {
   color: var(--text-muted);
   font-size: 0.95rem;
   margin-top: 4px;
+}
+
+/* F3: Warning Banner */
+.warning-banner {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.warning-banner.banner-danger {
+  background-color: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.warning-banner.banner-success {
+  background-color: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.warning-banner.banner-info {
+  background-color: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+/* W5: Summary Grid */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 4px solid var(--border-color);
+}
+
+.summary-card.summary-balance {
+  border-left-color: var(--primary-color);
+}
+
+.summary-card.summary-income {
+  border-left-color: var(--income-color);
+}
+
+.summary-card.summary-expense {
+  border-left-color: var(--expense-color);
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.summary-income .summary-value {
+  color: var(--income-color);
+}
+
+.summary-expense .summary-value {
+  color: var(--expense-color);
+}
+
+/* F1 & F2: Budget & Allowance Section */
+.budget-section {
+  margin-bottom: 24px;
+}
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .budget-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+.budget-col h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.budget-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.input-action-group {
+  display: flex;
+  gap: 8px;
+}
+
+.input-action-group input {
+  flex: 1;
+}
+
+.status-budget-text {
+  font-size: 0.85rem;
+  color: #334155;
+  margin-top: 8px;
+}
+
+.allowance-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.stat-label {
+  color: #475569;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: 700;
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-danger {
+  color: var(--expense-color);
+}
+
+.text-muted {
+  color: var(--text-muted);
 }
 
 /* Layout Main Content */
@@ -121,7 +287,22 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+.form-group input.input-error,
+.form-group select.input-error {
+  border-color: var(--expense-color);
+}
 
+.form-group input.input-error:focus,
+.form-group select.input-error:focus {
+  border-color: var(--expense-color);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.error-message {
+  font-size: 0.8rem;
+  color: var(--expense-color);
+  margin-top: 4px;
+}
 
 /* Buttons */
 .btn {
@@ -150,6 +331,17 @@ body {
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: #334155;
+  color: #ffffff;
+  padding: 10px 18px;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background-color: #1e293b;
 }
 
 .btn-delete {
@@ -189,6 +381,19 @@ body {
   background-color: #f1f5f9;
   color: #475569;
 }
+
+.badge-danger {
+  background-color: var(--expense-bg);
+  color: var(--expense-color);
+  border: 1px solid #fecaca;
+}
+
+.badge-success {
+  background-color: var(--income-bg);
+  color: var(--income-color);
+  border: 1px solid #a7f3d0;
+}
+
 
 .transaction-list {
   display: flex;
