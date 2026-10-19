@@ -54,17 +54,12 @@ function simpanData() {
  * Mengambil data pengaturan uang bulanan dari localStorage.
  */
 function muatPengaturan() {
-  const pengaturanTersimpan = localStorage.getItem("pmm_pengaturan");
-  if (pengaturanTersimpan) {
-    try {
-      const parsed = JSON.parse(pengaturanTersimpan);
-      return { uangBulanan: Number(parsed.uangBulanan) || 0 };
-    } catch (e) {
-      console.error("Gagal mengurai pengaturan dari localStorage", e);
-      return { uangBulanan: 0 };
-    }
+  const tersimpan = localStorage.getItem("pmm_pengaturan");
+  try {
+    return tersimpan ? JSON.parse(tersimpan) : { uangBulanan: 0 };
+  } catch {
+    return { uangBulanan: 0 };
   }
-  return { uangBulanan: 0 };
 }
 
 /**
@@ -78,49 +73,25 @@ function simpanPengaturan(data) {
 // 2. Utilitas & Formatting
 // ==========================================
 
-/**
- * Mengubah angka menjadi format Rupiah Indonesia (contoh: 25000 -> "Rp 25.000").
- * @param {number} nominal - Angka nominal
- * @returns {string} String format Rupiah
- */
 function formatRupiah(nominal) {
   return "Rp " + Number(nominal).toLocaleString("id-ID");
 }
 
-/**
- * Mendapatkan tanggal sistem hari ini dalam format YYYY-MM-DD.
- */
 function dapatkanTanggalHariIni() {
-  const hariIni = new Date();
-  const tahun = hariIni.getFullYear();
-  const bulan = String(hariIni.getMonth() + 1).padStart(2, "0");
-  const tanggal = String(hariIni.getDate()).padStart(2, "0");
-  return `${tahun}-${bulan}-${tanggal}`;
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-/**
- * Mengekstrak angka murni dari string format currency.
- * Contoh: "25.000,-" -> 25000
- */
 function dapatkanNominalAngka(str) {
-  if (!str) return 0;
-  const angkaSaja = String(str).replace(/\D/g, "");
-  return Number(angkaSaja) || 0;
+  return Number(String(str || "").replace(/\D/g, "")) || 0;
 }
 
-/**
- * Memformat string angka ke format currency dengan titik ribuan dan akhiran ',-'
- * Contoh: "25000" -> "25.000,-"
- */
 function formatInputCurrency(nilaiStr) {
-  const angkaSaja = String(nilaiStr).replace(/\D/g, "");
-  if (!angkaSaja) return "";
-  return Number(angkaSaja).toLocaleString("id-ID") + ",-";
+  const angka = String(nilaiStr || "").replace(/\D/g, "");
+  return angka ? Number(angka).toLocaleString("id-ID") + ",-" : "";
 }
 
-/**
- * Mengamankan teks dari karakter HTML berbahaya (mencegah XSS).
- */
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -131,27 +102,25 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-/**
- * Memperbarui pilihan dropdown kategori berdasarkan jenis transaksi.
- */
+function bersihkanErrorForm() {
+  document.querySelectorAll("#form-transaksi .input-error").forEach((el) => el.classList.remove("input-error"));
+  document.querySelectorAll("#form-transaksi .error-message").forEach((el) => (el.textContent = ""));
+}
+
 function perbaruiOpsiKategori(kategoriTerpilih = "") {
   const selectJenis = document.getElementById("jenis");
   const selectKategori = document.getElementById("kategori");
   if (!selectJenis || !selectKategori) return;
 
-  const jenis = selectJenis.value;
-  const daftarKategori = KATEGORI_OPSI[jenis] || [];
-
+  const daftar = KATEGORI_OPSI[selectJenis.value] || [];
   selectKategori.innerHTML = '<option value="" disabled selected>Pilih Kategori</option>';
 
-  daftarKategori.forEach((kat) => {
-    const option = document.createElement("option");
-    option.value = kat;
-    option.textContent = kat;
-    if (kat === kategoriTerpilih) {
-      option.selected = true;
-    }
-    selectKategori.appendChild(option);
+  daftar.forEach((kat) => {
+    const opt = document.createElement("option");
+    opt.value = kat;
+    opt.textContent = kat;
+    if (kat === kategoriTerpilih) opt.selected = true;
+    selectKategori.appendChild(opt);
   });
 }
 
@@ -159,65 +128,25 @@ function perbaruiOpsiKategori(kategoriTerpilih = "") {
 // 3. Validasi Form (W6)
 // ==========================================
 
-/**
- * Memvalidasi form input transaksi secara menyeluruh dan menampilkan pesan error di UI.
- * @returns {boolean} True jika semua field valid
- */
 function validasiForm() {
-  let isValid = true;
+  const tgl = document.getElementById("tanggal");
+  const jns = document.getElementById("jenis");
+  const kat = document.getElementById("kategori");
+  const nom = document.getElementById("nominal");
 
-  const inputTanggal = document.getElementById("tanggal");
-  const selectJenis = document.getElementById("jenis");
-  const selectKategori = document.getElementById("kategori");
-  const inputNominal = document.getElementById("nominal");
+  const cek = (el, idErr, pesan) => {
+    const elErr = document.getElementById(idErr);
+    el.classList.toggle("input-error", Boolean(pesan));
+    if (elErr) elErr.textContent = pesan;
+    return !pesan;
+  };
 
-  const errorTanggal = document.getElementById("error-tanggal");
-  const errorJenis = document.getElementById("error-jenis");
-  const errorKategori = document.getElementById("error-kategori");
-  const errorNominal = document.getElementById("error-nominal");
+  const v1 = cek(tgl, "error-tanggal", tgl.value ? "" : "Tanggal transaksi wajib diisi.");
+  const v2 = cek(jns, "error-jenis", jns.value ? "" : "Jenis transaksi wajib dipilih.");
+  const v3 = cek(kat, "error-kategori", kat.value ? "" : "Kategori wajib dipilih.");
+  const v4 = cek(nom, "error-nominal", nom.value.trim() && dapatkanNominalAngka(nom.value) > 0 ? "" : "Nominal harus diisi dan lebih besar dari Rp 0.");
 
-  // Validasi Tanggal
-  if (!inputTanggal.value) {
-    inputTanggal.classList.add("input-error");
-    if (errorTanggal) errorTanggal.textContent = "Tanggal transaksi wajib diisi.";
-    isValid = false;
-  } else {
-    inputTanggal.classList.remove("input-error");
-    if (errorTanggal) errorTanggal.textContent = "";
-  }
-
-  // Validasi Jenis
-  if (!selectJenis.value) {
-    selectJenis.classList.add("input-error");
-    if (errorJenis) errorJenis.textContent = "Jenis transaksi wajib dipilih.";
-    isValid = false;
-  } else {
-    selectJenis.classList.remove("input-error");
-    if (errorJenis) errorJenis.textContent = "";
-  }
-
-  // Validasi Kategori
-  if (!selectKategori.value) {
-    selectKategori.classList.add("input-error");
-    if (errorKategori) errorKategori.textContent = "Kategori wajib dipilih.";
-    isValid = false;
-  } else {
-    selectKategori.classList.remove("input-error");
-    if (errorKategori) errorKategori.textContent = "";
-  }
-
-  // Validasi Nominal
-  const nominalAngka = dapatkanNominalAngka(inputNominal.value);
-  if (!inputNominal.value.trim() || nominalAngka <= 0) {
-    inputNominal.classList.add("input-error");
-    if (errorNominal) errorNominal.textContent = "Nominal harus diisi dan lebih besar dari Rp 0.";
-    isValid = false;
-  } else {
-    inputNominal.classList.remove("input-error");
-    if (errorNominal) errorNominal.textContent = "";
-  }
-
-  return isValid;
+  return v1 && v2 && v3 && v4;
 }
 
 
@@ -225,8 +154,11 @@ function validasiForm() {
 // 4. Logika Transaksi & Pengaturan (W1, W3, F1)
 // ==========================================
 
+// State untuk fitur B2: Edit Transaksi
+let idTransaksiSedangDiedit = null;
+
 /**
- * Menangani submit penambahan transaksi baru.
+ * Menangani submit penambahan atau pembaruan transaksi.
  */
 function tambahTransaksi(event) {
   event.preventDefault();
@@ -243,64 +175,102 @@ function tambahTransaksi(event) {
 
   const nominalAngka = dapatkanNominalAngka(inputNominal.value);
 
-  const transaksiBaru = {
-    id: Date.now(),
-    tanggal: inputTanggal.value,
-    jenis: selectJenis.value,
-    kategori: selectKategori.value,
-    nominal: nominalAngka, // Disimpan sebagai NUMBER
-    catatan: inputCatatan.value.trim()
-  };
+  if (idTransaksiSedangDiedit !== null) {
+    // B2: Mode Update menggunakan map()
+    transaksi = transaksi.map((item) => {
+      if (item.id === idTransaksiSedangDiedit) {
+        return {
+          ...item,
+          tanggal: inputTanggal.value,
+          jenis: selectJenis.value,
+          kategori: selectKategori.value,
+          nominal: nominalAngka,
+          catatan: inputCatatan.value.trim()
+        };
+      }
+      return item;
+    });
 
-  transaksi.push(transaksiBaru);
+    batalkanEditTransaksi();
+  } else {
+    // Mode Tambah Transaksi Baru
+    const transaksiBaru = {
+      id: Date.now(),
+      tanggal: inputTanggal.value,
+      jenis: selectJenis.value,
+      kategori: selectKategori.value,
+      nominal: nominalAngka, // Disimpan sebagai NUMBER
+      catatan: inputCatatan.value.trim()
+    };
+
+    transaksi.push(transaksiBaru);
+
+    // Reset Form
+    inputNominal.value = "";
+    inputCatatan.value = "";
+    inputTanggal.value = dapatkanTanggalHariIni();
+    perbaruiOpsiKategori();
+
+    // Bersihkan kelas error jika ada
+    inputNominal.classList.remove("input-error");
+    selectKategori.classList.remove("input-error");
+  }
+
   simpanData();
-
-  // Reset Form
-  inputNominal.value = "";
-  inputCatatan.value = "";
-  inputTanggal.value = dapatkanTanggalHariIni();
-  perbaruiOpsiKategori();
-
-  // Bersihkan kelas error jika ada
-  inputNominal.classList.remove("input-error");
-  selectKategori.classList.remove("input-error");
-
   renderSemua();
 }
 
-/**
- * Menghapus transaksi berdasarkan ID unik dengan konfirmasi pengguna.
- */
-function hapusTransaksi(id) {
-  const yakin = confirm("Apakah Anda yakin ingin menghapus transaksi ini?");
-  if (!yakin) return;
+function setModeEdit(id = null) {
+  idTransaksiSedangDiedit = id;
+  const isEdit = id !== null;
+  document.getElementById("judul-form").textContent = isEdit ? "Edit Transaksi" : "Tambah Transaksi";
+  document.getElementById("btn-simpan").textContent = isEdit ? "Perbarui Transaksi" : "Simpan Transaksi";
+  document.getElementById("btn-batal-edit").style.display = isEdit ? "inline-block" : "none";
+  bersihkanErrorForm();
+}
 
+function mulaiEditTransaksi(id) {
+  const item = transaksi.find((t) => t.id === id);
+  if (!item) return;
+
+  setModeEdit(id);
+  document.getElementById("tanggal").value = item.tanggal;
+  document.getElementById("jenis").value = item.jenis;
+  perbaruiOpsiKategori();
+  document.getElementById("kategori").value = item.kategori;
+  document.getElementById("nominal").value = formatInputCurrency(String(item.nominal));
+  document.getElementById("catatan").value = item.catatan || "";
+
+  document.querySelector(".form-section")?.scrollIntoView({ behavior: "smooth" });
+}
+
+function batalkanEditTransaksi() {
+  setModeEdit(null);
+  document.getElementById("form-transaksi").reset();
+  document.getElementById("tanggal").value = dapatkanTanggalHariIni();
+  perbaruiOpsiKategori();
+}
+
+function hapusTransaksi(id) {
+  if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) return;
+  if (idTransaksiSedangDiedit === id) batalkanEditTransaksi();
   transaksi = transaksi.filter((item) => item.id !== id);
   simpanData();
   renderSemua();
 }
 
-
 // ==========================================
 // 5. Perhitungan & Render (W5, F2, F3)
 // ==========================================
 
-/**
- * W5: Menghitung ringkasan total pemasukan, pengeluaran, dan saldo.
- */
 function hitungRingkasan() {
-  const totalPemasukan = transaksi
-    .filter((item) => item.jenis === "pemasukan")
-    .reduce((total, item) => total + item.nominal, 0);
-
-  const totalPengeluaran = transaksi
-    .filter((item) => item.jenis === "pengeluaran")
-    .reduce((total, item) => total + item.nominal, 0);
-
-  // Saldo saat ini: Total semua pemasukan (termasuk Uang Bulanan & Sampingan) - Total pengeluaran
-  const saldo = totalPemasukan - totalPengeluaran;
-
-  return { totalPemasukan, totalPengeluaran, saldo };
+  let totalPemasukan = 0;
+  let totalPengeluaran = 0;
+  for (const item of transaksi) {
+    if (item.jenis === "pemasukan") totalPemasukan += item.nominal;
+    else if (item.jenis === "pengeluaran") totalPengeluaran += item.nominal;
+  }
+  return { totalPemasukan, totalPengeluaran, saldo: totalPemasukan - totalPengeluaran };
 }
 
 /**
@@ -442,8 +412,11 @@ function hitungJatahHarian() {
     jatah = Math.floor(uangBulanan / SIKLUS_HARI);
   }
 
-  // Checker: apakah total pengeluaran pada tanggal tersebut melebihi jatah
+  // Checker: apakah total pengeluaran pada tanggal tersebut melebihi jatah atau mendekati batas (sisa <= 15k)
+  const BATAS_PERINGATAN_MENDEKATI = 15000;
   const peringatan = uangBulananDiatur && pengeluaranHariIni > jatah;
+  const sisaJatah = Math.max(0, jatah - pengeluaranHariIni);
+  const mendekatiBatas = uangBulananDiatur && !peringatan && pengeluaranHariIni > 0 && sisaJatah <= BATAS_PERINGATAN_MENDEKATI;
   const selisih = Math.abs(pengeluaranHariIni - jatah);
 
   return {
@@ -459,6 +432,8 @@ function hitungJatahHarian() {
     pengeluaranHariIni,
     jumlahInputHariIni,
     peringatan,
+    mendekatiBatas,
+    sisaJatah,
     selisih
   };
 }
@@ -478,6 +453,8 @@ function renderJatahDanPeringatan() {
     pengeluaranHariIni,
     jumlahInputHariIni,
     peringatan,
+    mendekatiBatas,
+    sisaJatah,
     selisih
   } = hitungJatahHarian();
 
@@ -549,8 +526,10 @@ function renderJatahDanPeringatan() {
       elCheckerStatus.innerHTML = `<span class="badge badge-info">Belum ada acuan</span>`;
     } else if (peringatan) {
       elCheckerStatus.innerHTML = `<span class="badge badge-danger">⚠️ Melebihi jatah (+${formatRupiah(selisih)})</span>`;
+    } else if (mendekatiBatas) {
+      elCheckerStatus.innerHTML = `<span class="badge badge-warning">⚡ Mendekati batas (Sisa ${formatRupiah(sisaJatah)})</span>`;
     } else if (pengeluaranHariIni > 0) {
-      elCheckerStatus.innerHTML = `<span class="badge badge-success">✅ Masih aman (Sisa ${formatRupiah(selisih)})</span>`;
+      elCheckerStatus.innerHTML = `<span class="badge badge-success">✅ Masih aman (Sisa ${formatRupiah(sisaJatah)})</span>`;
     } else {
       elCheckerStatus.innerHTML = `<span class="badge badge-success">✅ Belum ada pengeluaran</span>`;
     }
@@ -573,6 +552,11 @@ function renderJatahDanPeringatan() {
       elBanner.innerHTML = `
         <span>⚠️ <strong>Peringatan Boros!</strong> Total pengeluaran ${labelHari} (${formatRupiah(pengeluaranHariIni)} dari ${jumlahInputHariIni} transaksi) telah melebihi jatah (${formatRupiah(jatah)}). Hemat pengeluaranmu untuk hari berikutnya!</span>
       `;
+    } else if (mendekatiBatas) {
+      elBanner.className = "warning-banner banner-warning";
+      elBanner.innerHTML = `
+        <span>⚡ <strong>Peringatan Mendekati Batas:</strong> Total pengeluaran ${labelHari} (${formatRupiah(pengeluaranHariIni)}) sudah mendekati batas jatah harian (${formatRupiah(jatah)}). Sisa jatah hari ini tinggal <strong>${formatRupiah(sisaJatah)}</strong>!</span>
+      `;
     } else {
       elBanner.className = "warning-banner banner-success";
       elBanner.innerHTML = `
@@ -582,8 +566,161 @@ function renderJatahDanPeringatan() {
   }
 }
 
+// ==========================================
+// 5. Fitur Bonus: Filter, Pencarian & Backup Data (B3, B4)
+// ==========================================
+
 /**
- * W2: Menampilkan daftar transaksi yang diurutkan terbaru di atas.
+ * B3: Memperbarui opsi dropdown filter kategori berdasarkan filter jenis yang aktif.
+ */
+function perbaruiOpsiFilterKategori(resetKeDefault = false) {
+  const filterJenis = document.getElementById("filter-jenis");
+  const filterKategori = document.getElementById("filter-kategori");
+  if (!filterJenis || !filterKategori) return;
+
+  const jenisTerpilih = filterJenis.value;
+  const nilaiSebelumnya = resetKeDefault ? "semua" : filterKategori.value;
+
+  filterKategori.innerHTML = '<option value="semua">Semua Kategori</option>';
+
+  let opsi = [];
+  if (jenisTerpilih === "pengeluaran") {
+    opsi = KATEGORI_OPSI.pengeluaran;
+  } else if (jenisTerpilih === "pemasukan") {
+    opsi = KATEGORI_OPSI.pemasukan;
+  } else {
+    // Gabungan seluruh kategori unik
+    opsi = Array.from(new Set([...KATEGORI_OPSI.pengeluaran, ...KATEGORI_OPSI.pemasukan]));
+  }
+
+  opsi.forEach((kat) => {
+    const opt = document.createElement("option");
+    opt.value = kat;
+    opt.textContent = kat;
+    filterKategori.appendChild(opt);
+  });
+
+  if (!resetKeDefault && opsi.includes(nilaiSebelumnya)) {
+    filterKategori.value = nilaiSebelumnya;
+  } else {
+    filterKategori.value = "semua";
+  }
+}
+
+function dapatkanTransaksiTerfilter() {
+  const keyword = (document.getElementById("filter-pencarian")?.value || "").trim().toLowerCase();
+  const jenis = document.getElementById("filter-jenis")?.value || "semua";
+  const kategori = document.getElementById("filter-kategori")?.value || "semua";
+  const dari = document.getElementById("filter-dari-tanggal")?.value || "";
+  const sampai = document.getElementById("filter-sampai-tanggal")?.value || "";
+
+  return transaksi.filter((t) => {
+    if (jenis !== "semua" && t.jenis !== jenis) return false;
+    if (kategori !== "semua" && t.kategori !== kategori) return false;
+    if (dari && t.tanggal < dari) return false;
+    if (sampai && t.tanggal > sampai) return false;
+    if (keyword && !(t.catatan?.toLowerCase().includes(keyword) || t.kategori.toLowerCase().includes(keyword))) return false;
+    return true;
+  });
+}
+
+function resetFilter() {
+  const elPencarian = document.getElementById("filter-pencarian");
+  const elJenis = document.getElementById("filter-jenis");
+  const elKategori = document.getElementById("filter-kategori");
+  const elDari = document.getElementById("filter-dari-tanggal");
+  const elSampai = document.getElementById("filter-sampai-tanggal");
+
+  if (elPencarian) elPencarian.value = "";
+  if (elDari) elDari.value = "";
+  if (elSampai) elSampai.value = "";
+  if (elJenis) elJenis.value = "semua";
+
+  perbaruiOpsiFilterKategori(true);
+  if (elKategori) elKategori.value = "semua";
+
+  renderDaftar();
+}
+
+/**
+ * B4: Mengekspor seluruh data transaksi ke dalam file format JSON.
+ */
+function eksporDataJson() {
+  if (transaksi.length === 0) {
+    alert("Belum ada data transaksi untuk diekspor.");
+    return;
+  }
+
+  const dataString = JSON.stringify(transaksi, null, 2);
+  const blob = new Blob([dataString], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `backup-transaksi-kos-${dapatkanTanggalHariIni()}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * B4: Mengimpor data transaksi dari file JSON yang dipilih pengguna.
+ */
+function imporDataJson(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const dataImpor = JSON.parse(e.target.result);
+
+      if (!Array.isArray(dataImpor)) {
+        throw new Error("Format file JSON harus berupa array transaksi.");
+      }
+
+      // Validasi struktur transaksi minimal
+      const valid = dataImpor.every(
+        (t) =>
+          t &&
+          typeof t.id !== "undefined" &&
+          typeof t.tanggal === "string" &&
+          typeof t.jenis === "string" &&
+          typeof t.kategori === "string" &&
+          typeof t.nominal === "number"
+      );
+
+      if (!valid) {
+        throw new Error("Struktur data transaksi dalam file JSON tidak sesuai.");
+      }
+
+      const konfirmasi = confirm(
+        `Ditemukan ${dataImpor.length} transaksi pada file.\nApakah Anda ingin mengganti data saat ini dengan data hasil impor?`
+      );
+
+      if (!konfirmasi) {
+        event.target.value = "";
+        return;
+      }
+
+      transaksi = dataImpor;
+      simpanData();
+      batalkanEditTransaksi();
+      renderSemua();
+      alert(`Berhasil mengimpor ${transaksi.length} transaksi!`);
+    } catch (err) {
+      alert(`Gagal mengimpor file: ${err.message}`);
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+/**
+ * W2 & B3: Menampilkan daftar transaksi yang diurutkan terbaru di atas dengan dukungan filter.
  */
 function renderDaftar() {
   const kontainer = document.getElementById("kontainer-daftar");
@@ -591,8 +728,14 @@ function renderDaftar() {
 
   if (!kontainer) return;
 
+  const transaksiTerfilter = dapatkanTransaksiTerfilter();
+
   if (badgeTotal) {
-    badgeTotal.textContent = `${transaksi.length} Transaksi`;
+    if (transaksiTerfilter.length === transaksi.length) {
+      badgeTotal.textContent = `${transaksi.length} Transaksi`;
+    } else {
+      badgeTotal.textContent = `${transaksiTerfilter.length} dari ${transaksi.length} Transaksi`;
+    }
   }
 
   kontainer.innerHTML = "";
@@ -607,8 +750,22 @@ function renderDaftar() {
     return;
   }
 
+  if (transaksiTerfilter.length === 0) {
+    kontainer.innerHTML = `
+      <div class="empty-state">
+        <p>🔍 Tidak ada transaksi yang cocok dengan kriteria filter.</p>
+        <button type="button" class="btn btn-action-tool" style="margin-top: 10px;" id="btn-empty-reset-filter">Reset Filter</button>
+      </div>
+    `;
+    const btnEmptyReset = document.getElementById("btn-empty-reset-filter");
+    if (btnEmptyReset) {
+      btnEmptyReset.addEventListener("click", resetFilter);
+    }
+    return;
+  }
+
   // Urutkan transaksi dari yang terbaru
-  const transaksiTerurut = [...transaksi].sort((a, b) => {
+  const transaksiTerurut = [...transaksiTerfilter].sort((a, b) => {
     if (a.tanggal !== b.tanggal) {
       return b.tanggal.localeCompare(a.tanggal);
     }
@@ -640,9 +797,17 @@ function renderDaftar() {
         <span class="item-amount ${amountClass}">
           ${tanda} ${formatRupiah(item.nominal)}
         </span>
-        <button type="button" class="btn-delete" title="Hapus transaksi">Hapus</button>
+        <div class="item-actions">
+          <button type="button" class="btn-action btn-edit" title="Edit transaksi">Edit</button>
+          <button type="button" class="btn-action btn-delete" title="Hapus transaksi">Hapus</button>
+        </div>
       </div>
     `;
+
+    const btnEdit = itemCard.querySelector(".btn-edit");
+    btnEdit.addEventListener("click", () => {
+      mulaiEditTransaksi(item.id);
+    });
 
     const btnHapus = itemCard.querySelector(".btn-delete");
     btnHapus.addEventListener("click", () => {
@@ -677,14 +842,19 @@ document.addEventListener("DOMContentLoaded", () => {
   transaksi = muatData();
   pengaturan = muatPengaturan();
 
-  // Daftarkan listener form tambah transaksi
+  // Daftarkan listener form tambah/edit transaksi
   const formTransaksi = document.getElementById("form-transaksi");
   if (formTransaksi) {
     formTransaksi.addEventListener("submit", tambahTransaksi);
   }
 
+  // Listener tombol Batal Edit (B2)
+  const btnBatalEdit = document.getElementById("btn-batal-edit");
+  if (btnBatalEdit) {
+    btnBatalEdit.addEventListener("click", batalkanEditTransaksi);
+  }
 
-  // Daftarkan listener saat jenis transaksi berubah (Pengeluaran <-> Pemasukan)
+  // Daftarkan listener saat jenis transaksi di form berubah
   const selectJenis = document.getElementById("jenis");
   if (selectJenis) {
     selectJenis.addEventListener("change", () => {
@@ -736,10 +906,58 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Listener B3: Filter & Pencarian
+  const elPencarian = document.getElementById("filter-pencarian");
+  if (elPencarian) {
+    elPencarian.addEventListener("input", renderDaftar);
+  }
 
+  const filterJenis = document.getElementById("filter-jenis");
+  if (filterJenis) {
+    filterJenis.addEventListener("change", () => {
+      perbaruiOpsiFilterKategori();
+      renderDaftar();
+    });
+  }
 
-  // Isi dropdown kategori sesuai jenis awal
+  const filterKategori = document.getElementById("filter-kategori");
+  if (filterKategori) {
+    filterKategori.addEventListener("change", renderDaftar);
+  }
+
+  const filterDari = document.getElementById("filter-dari-tanggal");
+  if (filterDari) {
+    filterDari.addEventListener("change", renderDaftar);
+  }
+
+  const filterSampai = document.getElementById("filter-sampai-tanggal");
+  if (filterSampai) {
+    filterSampai.addEventListener("change", renderDaftar);
+  }
+
+  const btnResetFilter = document.getElementById("btn-reset-filter");
+  if (btnResetFilter) {
+    btnResetFilter.addEventListener("click", resetFilter);
+  }
+
+  // Listener B4: Backup Ekspor & Impor JSON
+  const btnEkspor = document.getElementById("btn-ekspor-json");
+  if (btnEkspor) {
+    btnEkspor.addEventListener("click", eksporDataJson);
+  }
+
+  const btnImporTrigger = document.getElementById("btn-impor-trigger");
+  const inputImpor = document.getElementById("input-impor-json");
+  if (btnImporTrigger && inputImpor) {
+    btnImporTrigger.addEventListener("click", () => {
+      inputImpor.click();
+    });
+    inputImpor.addEventListener("change", imporDataJson);
+  }
+
+  // Isi dropdown kategori form awal & filter awal
   perbaruiOpsiKategori();
+  perbaruiOpsiFilterKategori();
 
   // Render semua komponen UI
   renderSemua();

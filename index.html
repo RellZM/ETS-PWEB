@@ -86,9 +86,9 @@
 
     <!-- Konten Utama: Form Transaksi & Daftar Transaksi -->
     <main class="main-content">
-      <!-- W1 & W6: Form Tambah Transaksi dengan Validasi Inline -->
+      <!-- W1, W6 & B2: Form Tambah/Edit Transaksi dengan Validasi Inline -->
       <section class="card form-section">
-        <h2>Tambah Transaksi</h2>
+        <h2 id="judul-form">Tambah Transaksi</h2>
         <form id="form-transaksi" novalidate>
           <div class="form-group">
             <label for="tanggal">Tanggal</label>
@@ -124,15 +124,58 @@
             <input type="text" id="catatan" placeholder="Contoh: Nasi padang + es teh">
           </div>
 
-          <button type="submit" id="btn-simpan" class="btn btn-primary">Simpan Transaksi</button>
+          <div class="form-actions">
+            <button type="submit" id="btn-simpan" class="btn btn-primary">Simpan Transaksi</button>
+            <button type="button" id="btn-batal-edit" class="btn btn-secondary" style="display: none;">Batal Edit</button>
+          </div>
         </form>
       </section>
 
-      <!-- W2 & W3: Daftar Transaksi -->
+      <!-- W2, W3, B3, B4: Daftar Transaksi, Filter & Backup Data -->
       <section class="card list-section">
         <div class="list-header">
-          <h2>Daftar Transaksi</h2>
-          <span id="total-transaksi-badge" class="badge badge-info">0 Transaksi</span>
+          <div class="list-header-title">
+            <h2>Daftar Transaksi</h2>
+            <span id="total-transaksi-badge" class="badge badge-info">0 Transaksi</span>
+          </div>
+          <!-- B4: Backup Data Ekspor & Impor JSON -->
+          <div class="data-actions">
+            <button type="button" id="btn-ekspor-json" class="btn btn-action-tool" title="Download backup data JSON">📥 Ekspor JSON</button>
+            <button type="button" id="btn-impor-trigger" class="btn btn-action-tool" title="Pulihkan data dari file JSON">📤 Impor JSON</button>
+            <input type="file" id="input-impor-json" accept=".json" style="display: none;">
+          </div>
+        </div>
+
+        <!-- B3: Toolbar Filter & Pencarian -->
+        <div class="filter-toolbar">
+          <div class="filter-row">
+            <div class="filter-group filter-search">
+              <input type="text" id="filter-pencarian" placeholder="🔍 Cari catatan / kategori...">
+            </div>
+            <div class="filter-group">
+              <select id="filter-jenis">
+                <option value="semua">Semua Jenis</option>
+                <option value="pengeluaran">Pengeluaran</option>
+                <option value="pemasukan">Pemasukan</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <select id="filter-kategori">
+                <option value="semua">Semua Kategori</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-row filter-date-row">
+            <div class="filter-date-item">
+              <label for="filter-dari-tanggal">Dari:</label>
+              <input type="date" id="filter-dari-tanggal">
+            </div>
+            <div class="filter-date-item">
+              <label for="filter-sampai-tanggal">Sampai:</label>
+              <input type="date" id="filter-sampai-tanggal">
+            </div>
+            <button type="button" id="btn-reset-filter" class="btn btn-reset" onclick="resetFilter()">Reset Filter</button>
+          </div>
         </div>
 
         <div id="kontainer-daftar" class="transaction-list">

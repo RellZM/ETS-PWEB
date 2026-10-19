@@ -62,3 +62,32 @@ Format entri:
 - Dipakai: elemen label `Jatah Harian:` di `index.html`; fungsi `hitungJatahHarian` di `app.js`
 - Diubah: mengubah perhitungan jatah harian menjadi nilai batas harian tetap (`uangBulanan / 30`) sehingga tidak berfluktuasi saat sisa hari berkurang, namun tetap dinamis dan otomatis ter-update jika ada input transaksi pemasukan uang bulanan baru
 
+## Tahap 3: Fitur Bonus (B1 Responsif 360px, B2 Edit Transaksi, B3 Filter & Pencarian, B4 Ekspor/Impor JSON)
+- Prompt: “coba implement tahap 3”
+- Dipakai: elemen judul form `#judul-form`, tombol `#btn-batal-edit`, toolbar filter & pencarian, tombol ekspor/impor data di `index.html`; penataan styling toolbar filter, tombol edit/hapus, serta media query `@media (max-width: 360px)` di `style.css`; state `idTransaksiSedangDiedit`, fungsi `mulaiEditTransaksi`, `batalkanEditTransaksi`, `perbaruiOpsiFilterKategori`, `dapatkanTransaksiTerfilter`, `resetFilter`, `eksporDataJson`, `imporDataJson`, serta pembaruan `tambahTransaksi` dan `renderDaftar` di `app.js`
+- Diubah: menambahkan mode edit transaksi menggunakan `map()` dengan tombol batal, filter dinamis multi-kriteria (jenis, kategori, rentang tanggal, pencarian catatan), backup/restore JSON menggunakan `Blob` dan `FileReader`, serta styling responsif tanpa horizontal scroll pada layar 360px
+
+## Peringatan Pengeluaran Harian Mendekati Batas (Sisa <= Rp 15.000)
+- Prompt: “beri peringatan jika jumlah pengeluaran harian mendekati batas pengeluaran harian (sisa 15k)”
+- Dipakai: kelas `.warning-banner.banner-warning` dan `.badge-warning` di `style.css`; konstanta `BATAS_PERINGATAN_MENDEKATI`, variabel kondisi `mendekatiBatas` pada `hitungJatahHarian` dan `renderJatahDanPeringatan` di `app.js`
+- Diubah: menambahkan level peringatan transisi (kuning/amber) ketika pengeluaran harian belum melampaui jatah tetapi sisa jatah hari ini sudah mencapai Rp 15.000 atau kurang, disertai badge status checker dan teks banner peringatan visual
+
+## Refaktor & Penyederhanaan Kode (Skill Ponytail)
+- Prompt: “eh tolong cek apakah skill ponytail gw masih ada apa nggak kalau ada tolong simplify kode yg udah gw buat dengan skill ponytail https://github.com/dietrichgebert/ponytail”
+- Dipakai: skill `ponytail` di `.agents/skills/ponytail/`; fungsi `validasiForm`, `setModeEdit`, `bersihkanErrorForm`, `hitungRingkasan`, `dapatkanTransaksiTerfilter`, `resetFilter`, `dapatkanNominalAngka`, dan `formatInputCurrency` di `app.js`
+- Diubah: menyederhanakan kode dengan membuang percabangan if/else berulang pada validasi form, mengganti filter ganda ringkasan dengan single-pass loop, menyatukan manajemen state edit form dan reset error, serta memadatkan fungsi utilitas ke pola paling minimal tanpa mengurangi fungsionalitas
+
+## Perbaikan Tombol Reset Filter
+- Prompt: “tolong fix tombol reset filter”
+- Dipakai: elemen `#btn-reset-filter` di `index.html`; fungsi `resetFilter` dan `perbaruiOpsiFilterKategori` di `app.js`
+- Diubah: memperbaiki fungsi reset filter agar seluruh input (pencarian teks, rentang tanggal, pilihan jenis, dan pilihan kategori) ter-reset sempurna ke kondisi default (`semua`), serta menambahkan event handler inline pada tombol reset
+
+## Format Dokumentasi (proses.md & README.md)
+- Prompt: “tolong improve formating di proses dan readme.md”
+- Dipakai: berkas `proses.md` dan `README.md`
+- Diubah: menyempurnakan struktur `proses.md` sesuai rubrik penilaian (persona mahasiswa kos, rancangan data JSON `pmm_transaksi` dan `pmm_pengaturan`, keputusan desain dashboard & integrasi uang bulanan otomatis, serta pembahasan rinci 2 bug/kendala beserta solusinya), dan melengkapi `README.md` dengan identitas nama, NRP, persona, serta checklist detail seluruh fitur yang telah selesai
+
+
+
+
+
